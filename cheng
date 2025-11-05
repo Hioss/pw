@@ -24,10 +24,21 @@ yu
 5560421992
 zhim****
 
-安装 Liferay IDE
-https://liferay.dev/-/ide-installation-instructions
+workspace
+https://drive.google.com/file/d/1Aso0fuvf733ePBjpiH5DSgrNHHxIDbQP/view?usp=drive_link
 
-3.10.4
-https://github.com/liferay/liferay-ide/releases
 
-https://drive.google.com/drive/folders/1EUdFQ1qHFgO0yglq6n5vaLw64Zkb1iYX?usp=drive_link
+通过属性关闭评论
+portal-ext.properties
+dl.file.entry.comments.enabled=false
+
+更规范的做法是在 OSGi 模块中提供一个 DLViewFileVersionDisplayContext 的包装，拦截是否显示评论的逻辑。
+比如创建 -- 一个 Component ，实现 DLViewFileVersionDisplayContext 接口或继承 BaseDLViewFileVersionDisplayContext，
+在 isShowComments() 或等效方法返回 false，然后注册 Service 覆盖。
+
+document-library-web-fragment\src\main\resources\META-INF\resources\document_library\view_file_entry.jsp
+document-library-web-fragment\src\main\resources\META-INF\resources\document_library\init.jsp
+document-library-web-fragment\src\main\resources\META-INF\resources\init.jsp
+这种方法感觉行不通，那么我想用拦截器解决这个问题。
+
+Liferay官方推荐优先使用动态扩展点（Dynamic Include）或Portlet Filter，而不是直接覆盖JSP，这样升级风险小。
