@@ -29,4 +29,7 @@ zhim****
 portal-ext.properties
 dl.file.entry.comments.enabled=false
 
-https://plugins.jetbrains.com/plugin/13710-chinese-simplified-language-pack----
+$LIFERAY_HOME/portal-ext.properties
+dl.file.entry.comments.enabled=true
+重启服务器
+
