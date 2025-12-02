@@ -25,11 +25,16 @@ yu
 zhim****
 
 
-通过属性关闭评论
-portal-ext.properties
-dl.file.entry.comments.enabled=false
+性能改善的实现思路想和Liferay先生确认是否可行？
 
-$LIFERAY_HOME/portal-ext.properties
-dl.file.entry.comments.enabled=true
-重启服务器
+创建 OSGi Fragment覆盖 DLViewFileEntryDisplayContext 
+不加载Info Panel的表示部分（包含 ckeditor5.js 1.5MB）。
 
+性能改善の実現方法について、Liferay様に確認したい点があります。
+
+OSGi Fragment を作成し、DLViewFileEntryDisplayContext を上書きすることで、
+Info Panel の表示部分（コメント機能を含む）を読み込まないようにし、
+それに伴って ckeditor5.js（約1.5MB）のロードを抑制する、という方法は実現可能でしょうか。
+
+このアプローチで Document Library の表示パフォーマンスを改善できると考えていますが、
+Liferay の標準仕様として問題がないか、ご意見をいただければ幸いです。
