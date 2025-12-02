@@ -25,16 +25,9 @@ yu
 zhim****
 
 
-性能改善的实现思路想和Liferay先生确认是否可行？
-
-创建 OSGi Fragment覆盖 DLViewFileEntryDisplayContext 
-不加载Info Panel的表示部分（包含 ckeditor5.js 1.5MB）。
-
-性能改善の実現方法について、Liferay様に確認したい点があります。
-
-OSGi Fragment を作成し、DLViewFileEntryDisplayContext を上書きすることで、
-Info Panel の表示部分（コメント機能を含む）を読み込まないようにし、
-それに伴って ckeditor5.js（約1.5MB）のロードを抑制する、という方法は実現可能でしょうか。
-
-このアプローチで Document Library の表示パフォーマンスを改善できると考えていますが、
-Liferay の標準仕様として問題がないか、ご意見をいただければ幸いです。
+Cache-Control が private, no-cache のため、
+ブラウザはキャッシュを使用できず、毎回サーバーに再取得を要求します。
+さらに、ETag / Last-Modified による再検証が行われないため、
+サーバーは 304 ではなく 200（フルサイズ）を返します。
+その結果、ckeditor5.js（約 1.5MB） が毎回ダウンロードされ、
+ページ表示が大幅に遅くなっています。
