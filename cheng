@@ -25,5 +25,6 @@ yu
 zhim****
 
 
-org.gradle.java.home=C:/Program Files/Java/jdk-11
-implementation 'com.oracle.database.jdbc:ojdbc8:23.3.0.23.09'
+cd /d D:\work\jdbc-demo
+C:\Grade\gradle-8.5\bin\gradle.bat clean shadowJar
+java -jar jdbc-demo.jar
