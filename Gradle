@@ -1,8 +1,19 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath 'com.gradleup.shadow:shadow-gradle-plugin:8.3.0'
+    }
+}
+
 plugins {
     id 'java'
     id 'application'
-    id 'com.gradleup.shadow' version '8.3.0'
 }
+
+apply plugin: 'com.gradleup.shadow'
 
 group = 'com.example'
 version = '1.0.0'
@@ -12,7 +23,7 @@ repositories {
 }
 
 dependencies {
-    // Oracle JDBC 驱动，适合 Java 8+，可用于 Java 11
+    // Oracle JDBC 驱动，打进 fat jar
     implementation 'com.oracle.database.jdbc:ojdbc8:23.3.0.23.09'
 }
 
@@ -32,12 +43,11 @@ tasks.withType(JavaCompile).configureEach {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'com.example.JdbcDemo'
+            'Main-Class': 'com.example.JdbcDemo'
         )
     }
 }
 
-// 生成包含所有依赖的可执行 fat jar
 shadowJar {
     archiveBaseName.set('jdbc-demo')
     archiveClassifier.set('')
