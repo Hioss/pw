@@ -1,0 +1,121 @@
+package com.example;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class JdbcDemo {
+
+    public static void main(String[] args) {
+        // 从环境变量读取数据库连接参数
+        String url = System.getenv("DB_URL");
+        String username = System.getenv("DB_USERNAME");
+        String password = System.getenv("DB_PASSWORD");
+
+        // 读取要执行的 SQL，如果没有设置就用默认 SQL
+        String sql = System.getenv("DB_SQL");
+        if (sql == null || sql.trim().isEmpty()) {
+            sql = "select sysdate as current_time from dual";
+        }
+
+        // 基本检查
+        if (isBlank(url) || isBlank(username) || isBlank(password)) {
+            System.err.println("错误：请先设置环境变量 DB_URL、DB_USERNAME、DB_PASSWORD");
+            System.err.println("示例：");
+            System.err.println("export DB_URL='jdbc:oracle:thin:@//127.0.0.1:1521/FREEPDB1'");
+            System.err.println("export DB_USERNAME='system'");
+            System.err.println("export DB_PASSWORD='YourPassword'");
+            System.exit(1);
+        }
+
+        // 显式加载 Oracle JDBC 驱动
+        try {
+            Class.forName("oracle.jdbc.OracleDriver");
+        } catch (ClassNotFoundException e) {
+            System.err.println("错误：未找到 Oracle JDBC 驱动，请确认打包是否正确。");
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        System.out.println("开始连接数据库...");
+        System.out.println("URL = " + url);
+        System.out.println("SQL = " + sql);
+
+        try (
+                Connection conn = DriverManager.getConnection(url, username, password);
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()
+        ) {
+            System.out.println("数据库连接成功。");
+            printResultSet(rs);
+        } catch (SQLException e) {
+            System.err.println("数据库操作失败。");
+            printSQLException(e);
+            System.exit(2);
+        }
+    }
+
+    /**
+     * 打印查询结果
+     */
+    private static void printResultSet(ResultSet rs) throws SQLException {
+        int columnCount = rs.getMetaData().getColumnCount();
+
+        // 打印表头
+        for (int i = 1; i <= columnCount; i++) {
+            System.out.print(rs.getMetaData().getColumnLabel(i));
+            if (i < columnCount) {
+                System.out.print("\t|\t");
+            }
+        }
+        System.out.println();
+
+        // 打印分隔线
+        for (int i = 1; i <= columnCount; i++) {
+            System.out.print("------------");
+            if (i < columnCount) {
+                System.out.print("+");
+            }
+        }
+        System.out.println();
+
+        // 打印数据
+        int rowCount = 0;
+        while (rs.next()) {
+            rowCount++;
+            for (int i = 1; i <= columnCount; i++) {
+                Object value = rs.getObject(i);
+                System.out.print(value == null ? "null" : value.toString());
+                if (i < columnCount) {
+                    System.out.print("\t|\t");
+                }
+            }
+            System.out.println();
+        }
+
+        System.out.println("共返回 " + rowCount + " 行。");
+    }
+
+    /**
+     * 打印详细 SQL 异常
+     */
+    private static void printSQLException(SQLException e) {
+        SQLException current = e;
+        while (current != null) {
+            System.err.println("--------------------------------------------------");
+            System.err.println("Message   : " + current.getMessage());
+            System.err.println("SQLState  : " + current.getSQLState());
+            System.err.println("ErrorCode : " + current.getErrorCode());
+            current = current.getNextException();
+        }
+    }
+
+    /**
+     * 判断字符串是否为空
+     */
+    private static boolean isBlank(String str) {
+        return str == null || str.trim().isEmpty();
+    }
+}
