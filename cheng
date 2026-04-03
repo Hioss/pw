@@ -25,6 +25,5 @@ yu
 zhim****
 
 
-cd /d D:\work\jdbc-demo
-C:\Grade\gradle-8.5\bin\gradle.bat clean shadowJar
-java -jar jdbc-demo.jar
+cd /d D:\程春海\【2026.02】Exa統合対応\jdbc-demo
+C:\Grade\gradle-8.5\bin\gradle.bat clean shadowJar --refresh-dependencies
