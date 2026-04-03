@@ -25,9 +25,5 @@ yu
 zhim****
 
 
-Cache-Control が private, no-cache のため、
-ブラウザはキャッシュを使用できず、毎回サーバーに再取得を要求します。
-さらに、ETag / Last-Modified による再検証が行われないため、
-サーバーは 304 ではなく 200（フルサイズ）を返します。
-その結果、ckeditor5.js（約 1.5MB） が毎回ダウンロードされ、
-ページ表示が大幅に遅くなっています。
+org.gradle.java.home=C:/Program Files/Java/jdk-11
+implementation 'com.oracle.database.jdbc:ojdbc8:23.3.0.23.09'
