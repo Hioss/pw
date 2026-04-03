@@ -1,19 +1,7 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        gradlePluginPortal()
-    }
-    dependencies {
-        classpath 'com.gradleup.shadow:shadow-gradle-plugin:8.3.0'
-    }
-}
-
 plugins {
     id 'java'
     id 'application'
 }
-
-apply plugin: 'com.gradleup.shadow'
 
 group = 'com.example'
 version = '1.0.0'
@@ -23,7 +11,6 @@ repositories {
 }
 
 dependencies {
-    // Oracle JDBC 驱动，打进 fat jar
     implementation 'com.oracle.database.jdbc:ojdbc8:23.3.0.23.09'
 }
 
@@ -41,16 +28,19 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 jar {
+    archiveBaseName.set('jdbc-demo')
+    archiveVersion.set('')
+    archiveClassifier.set('')
+
     manifest {
         attributes(
             'Main-Class': 'com.example.JdbcDemo'
         )
     }
-}
 
-shadowJar {
-    archiveBaseName.set('jdbc-demo')
-    archiveClassifier.set('')
-    archiveVersion.set('')
-    mergeServiceFiles()
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
