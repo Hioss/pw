@@ -1,13 +1,3 @@
-查当前用户用的 profile
-select username, profile
-from dba_users
-where username = '你的用户名';
-
-查这个 profile 的限制
-select profile, resource_name, limit
-from dba_profiles
-where profile = '查到的PROFILE名'
-and resource_name in ('IDLE_TIME', 'CONNECT_TIME', 'SESSIONS_PER_USER');
-
-查数据库是否启用了资源限制
-show parameter resource_limit;
+SELECT NAME, VALUE
+FROM V$DIAG_INFO
+WHERE NAME IN ('Diag Trace', 'Diag Alert');
