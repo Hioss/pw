@@ -1,3 +1,1 @@
-SELECT NAME, VALUE
-FROM V$DIAG_INFO
-WHERE NAME IN ('Diag Trace', 'Diag Alert');
+双方对网络加密/完整性校验配置不兼容。
