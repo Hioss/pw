@@ -1,16 +1,2 @@
-新数据库启用了 Oracle Net 强制加密和校验，而客户端没有完全匹配，导致通信校验失败（TNS-12599），连接被数据库主动断开。
+https://zhuanlan.zhihu.com/p/1919338285160965135
 
-一
-SQLNET.ENCRYPTION_SERVER = ACCEPTED
-SQLNET.CRYPTO_CHECKSUM_SERVER = ACCEPTED
-二
-Java JDBC URL 加参数：
-oracle.net.encryption_client=REQUIRED
-oracle.net.crypto_checksum_client=REQUIRED
-oracle.net.encryption_types_client=(AES256,AES192,AES128)
-oracle.net.crypto_checksum_types_client=(SHA512,SHA384,SHA256)
-sqlnet.ora（客户端）配置：
-SQLNET.ENCRYPTION_CLIENT = REQUIRED
-SQLNET.CRYPTO_CHECKSUM_CLIENT = REQUIRED
-SQLNET.ENCRYPTION_TYPES_CLIENT = (AES256,AES192,AES128)
-SQLNET.CRYPTO_CHECKSUM_TYPES_CLIENT = (SHA512,SHA384,SHA256)
