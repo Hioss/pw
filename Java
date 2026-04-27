@@ -1,2 +1,2 @@
-grep -R "ProxyAddHeaders\|X-Forwarded-For\|X-Real-IP" /etc/httpd/
-
+strmqikm 是 IBM MQ 老的 GUI 图形证书工具（iKeyman）。
+runmqktool 是基于 Java keytool 的命令行证书工具。
