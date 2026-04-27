@@ -1,2 +1,3 @@
-strmqikm 是 IBM MQ 老的 GUI 图形证书工具（iKeyman）。
-runmqktool 是基于 Java keytool 的命令行证书工具。
+X-Forwarded-For 是一个 HTTP 请求头，用来记录真实客户端 IP。
+
+如果 Apache 反向代理时传给 WildFly 的 X-Forwarded-For、X-Forwarded-Host 等头部行为变化，或者你们应用/WildFly 对真实 IP 的处理依赖这些头，就可能导致记录的客户端 IP 变化。
