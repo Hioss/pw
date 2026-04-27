@@ -1,2 +1,2 @@
-https://zhuanlan.zhihu.com/p/1919338285160965135
+grep -R "ProxyAddHeaders\|X-Forwarded-For\|X-Real-IP" /etc/httpd/
 
