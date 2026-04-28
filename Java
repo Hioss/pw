@@ -1,3 +1,23 @@
-X-Forwarded-For 是一个 HTTP 请求头，用来记录真实客户端 IP。
+更严格的警告默认开启
+GCC 10+ 开始默认启用 -fno-common：全局变量不能在多个 .c 文件中重复定义（以前链接器会合并，现在会报"multiple definition"错误）
+GCC 10+ 对未初始化变量的警告更精确
 
-如果 Apache 反向代理时传给 WildFly 的 X-Forwarded-For、X-Forwarded-Host 等头部行为变化，或者你们应用/WildFly 对真实 IP 的处理依赖这些头，就可能导致记录的客户端 IP 变化。
+方法一：直接用 GCC 13 重编译，观察错误和警告
+方法二：专项检查 -fno-common 问题
+# 搜索可能的重复定义（头文件中定义的非 extern 全局变量）
+grep -rn "^[a-zA-Z].*[^;]$" --include="*.h" | \
+  grep -v "typedef\|#\|//\|extern\|static\|inline"
+方法五：检查 __STDC_VERSION__ 相关条件编译
+# 查找代码中对标准版本的条件判断
+grep -rn "__STDC_VERSION__" --include="*.c" --include="*.h"
+
+
+GCC 8.3：默认使用 -std=gnu11（即 C11 加上 GNU 扩展）。
+GCC 13.2：默认使用 -std=gnu17（即 C17 加上 GNU 扩展）。
+如果不修改编译选项，你的代码将从 C11 模式切换到 C17 模式。由于 C17 主要是对 C11 的错误修复，通常不会导致编译失败。
+
+虽然 C17 变化很小，但从 GCC 8 到 GCC 13，编译器本身的诊断检查（Warnings/Errors）变得严苛得多，这才是升级后最容易报 Bug 的地方。
+
+如果 Makefile 没写 -std=，则使用 GCC 默认标准模式。
+GCC 8.3 默认大致是：gnu11
+GCC 13.2.1 默认大致仍是：gnu17
