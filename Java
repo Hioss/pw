@@ -1,44 +1,11 @@
+FUJITSU Software Interstage Application Server V13.0.0 リリース情報
+https://resources.global.fujitsu/software/manual/b1ws-1410/03z000/release-b1ws-1410-03z0.pdf
 
-
-
-批量找高风险写法
-grep -R --line-number "gets(" .
-grep -R --line-number "strcpy\|strcat\|sprintf" .
-grep -R --line-number "void main" .
-grep -R --line-number "malloc" .
-
-
-grep -R --line-number "register " .
-grep -R --line-number "auto " .
-grep -R --line-number "malloc" .
-grep -R --line-number "#include <malloc.h>" .
-
-gets()              高危，必须改
-strcpy/sprintf      容易缓冲区溢出
-void main           非标准
-未强转 malloc 返回值  老代码风格问题
-malloc.h            可移植性差，优先 stdlib.h
-
-
- ★"gets(" 
-查缓冲区溢出高风险函数。
-gets(buf);
-应改：fgets(buf, sizeof(buf), stdin);
-
- ★"void main" 标准 C 应该是：
-int main(void)
-或：
-int main(int argc, char *argv[])
-
- ★printf / fprintf / snprintf 格式不匹配
-这个属于格式化字符串漏洞。
-
- ★"malloc" .
-p = malloc(len * sizeof(struct item));
-memset(p, 0, len * sizeof(struct item));
-如果没判断 p == NULL，有问题。
-内存分配大小是否溢出
-
-
-先全量编译一次，保留日志
-grep -Ei "error:|warning:|deprecated|implicit|incompatible|overflow|uninitialized" build-gcc13.log
+主な変更点
+Jakarta EE 8／GlassFish 5 実行環境の提供
+OpenJDK 8（富士通拡張版）の提供
+Interstage HTTP Server 2.4（Apache 2.4 ベース）の提供
+HTTP/2 対応の追加
+WebSocket 対応の追加
+32bit OS および旧OSのサポート終了
+TLS 1.3 対応の強化
