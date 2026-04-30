@@ -1,23 +1,44 @@
-更严格的警告默认开启
-GCC 10+ 开始默认启用 -fno-common：全局变量不能在多个 .c 文件中重复定义（以前链接器会合并，现在会报"multiple definition"错误）
-GCC 10+ 对未初始化变量的警告更精确
-
-方法一：直接用 GCC 13 重编译，观察错误和警告
-方法二：专项检查 -fno-common 问题
-# 搜索可能的重复定义（头文件中定义的非 extern 全局变量）
-grep -rn "^[a-zA-Z].*[^;]$" --include="*.h" | \
-  grep -v "typedef\|#\|//\|extern\|static\|inline"
-方法五：检查 __STDC_VERSION__ 相关条件编译
-# 查找代码中对标准版本的条件判断
-grep -rn "__STDC_VERSION__" --include="*.c" --include="*.h"
 
 
-GCC 8.3：默认使用 -std=gnu11（即 C11 加上 GNU 扩展）。
-GCC 13.2：默认使用 -std=gnu17（即 C17 加上 GNU 扩展）。
-如果不修改编译选项，你的代码将从 C11 模式切换到 C17 模式。由于 C17 主要是对 C11 的错误修复，通常不会导致编译失败。
 
-虽然 C17 变化很小，但从 GCC 8 到 GCC 13，编译器本身的诊断检查（Warnings/Errors）变得严苛得多，这才是升级后最容易报 Bug 的地方。
+批量找高风险写法
+grep -R --line-number "gets(" .
+grep -R --line-number "strcpy\|strcat\|sprintf" .
+grep -R --line-number "void main" .
+grep -R --line-number "malloc" .
 
-如果 Makefile 没写 -std=，则使用 GCC 默认标准模式。
-GCC 8.3 默认大致是：gnu11
-GCC 13.2.1 默认大致仍是：gnu17
+
+grep -R --line-number "register " .
+grep -R --line-number "auto " .
+grep -R --line-number "malloc" .
+grep -R --line-number "#include <malloc.h>" .
+
+gets()              高危，必须改
+strcpy/sprintf      容易缓冲区溢出
+void main           非标准
+未强转 malloc 返回值  老代码风格问题
+malloc.h            可移植性差，优先 stdlib.h
+
+
+ ★"gets(" 
+查缓冲区溢出高风险函数。
+gets(buf);
+应改：fgets(buf, sizeof(buf), stdin);
+
+ ★"void main" 标准 C 应该是：
+int main(void)
+或：
+int main(int argc, char *argv[])
+
+ ★printf / fprintf / snprintf 格式不匹配
+这个属于格式化字符串漏洞。
+
+ ★"malloc" .
+p = malloc(len * sizeof(struct item));
+memset(p, 0, len * sizeof(struct item));
+如果没判断 p == NULL，有问题。
+内存分配大小是否溢出
+
+
+先全量编译一次，保留日志
+grep -Ei "error:|warning:|deprecated|implicit|incompatible|overflow|uninitialized" build-gcc13.log
