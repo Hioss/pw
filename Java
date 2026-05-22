@@ -1,3 +1,5 @@
+https://endoflife.date/django?utm_source=chatgpt.com
+
 Python 最新版本是 3.14.5（2026 年 5 月 10 日发布）。
 https://www.python.org/downloads/
 
