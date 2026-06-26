@@ -1,18 +1,30 @@
 @echo off
 setlocal enabledelayedexpansion
 
-rem === 路径设置 ===
+rem ==================================================
+rem Beyond Compare 3 複数ファイル比較バッチ
+rem compare_list.txt の各行を読み込み、比較結果を1つのCSVにまとめる
+rem ==================================================
+
+rem === パス設定 ===
 set "BC_DIR=D:\TOOL\Beyond Compare 3"
-set "LIST_FILE=%BC_DIR%\compare_list.txt"
-set "SCRIPT_FILE=%BC_DIR%\compare_temp.txt"
-set "TEMP_CSV=%BC_DIR%\Reports\temp_result.csv"
-set "SUMMARY_CSV=%BC_DIR%\Reports\summary_result.csv"
+set "LIST_FILE=D:\TOOL\Beyond Compare 3\compare_list.txt"
+set "SCRIPT_FILE=D:\TOOL\Beyond Compare 3\compare_temp.txt"
+set "TEMP_CSV=D:\temp_result.csv"
+set "SUMMARY_CSV=D:\TOOL\Beyond Compare 3\Reports\summary_result.csv"
 
-rem === 初始化总报告 ===
+rem === 実行時のパス確認 ===
+echo LIST_FILE = %LIST_FILE%
+echo SCRIPT_FILE = %SCRIPT_FILE%
+echo SUMMARY_CSV = %SUMMARY_CSV%
+echo 続行するには何かキーを押してください . . .
+pause >nul
+
+rem === 集計レポートの初期化 ===
 if exist "%SUMMARY_CSV%" del "%SUMMARY_CSV%"
-echo SourceFile,CompareFile,IOriginal,IAdded,IDeleted,IChanged,UOriginal,UAdded,UDeleted,UChanged,LeftOnly,RightOnly,Different>"%SUMMARY_CSV%"
+echo SourceFile,CompareFile,IOriginal,IAdded,IDeleted,IChanged,UOriginal,UAdded,UDeleted,UChanged>"%SUMMARY_CSV%"
 
-rem === 逐行比较 ===
+rem === compare_list.txt を1行ずつ読み込んで比較する ===
 for /f "usebackq tokens=1,2 delims=|" %%A in ("%LIST_FILE%") do (
     set "LEFT_FILE=%%A"
     set "RIGHT_FILE=%%B"
@@ -21,19 +33,21 @@ for /f "usebackq tokens=1,2 delims=|" %%A in ("%LIST_FILE%") do (
     echo   Left : !LEFT_FILE!
     echo   Right: !RIGHT_FILE!
 
+    rem === 前回の一時CSVを削除 ===
     if exist "%TEMP_CSV%" del "%TEMP_CSV%"
 
+    rem === Beyond Compare 用の一時スクリプトを作成 ===
     > "%SCRIPT_FILE%" echo criteria rules-based
     >>"%SCRIPT_FILE%" echo file-report layout:statistics options:display-all output-to:"%TEMP_CSV%" "!LEFT_FILE!" "!RIGHT_FILE!"
 
+    rem === Beyond Compare を実行 ===
     "%BC_DIR%\BComp.exe" @"%SCRIPT_FILE%"
 
-    rem 跳过 temp_result.csv 的表头，只追加数据行
-    for /f "usebackq skip=1 tokens=* delims=" %%L in ("%TEMP_CSV%") do (
-        rem 原 CSV 字段顺序：
-        rem SourceFile,CompareFile,IOriginal,IAdded,IDeleted,IChanged,UOriginal,UAdded,UDeleted,UChanged
-        rem 这里暂时直接追加原始行
-        echo %%L>>"%SUMMARY_CSV%"
+    rem === 一時CSVのヘッダー行を除き、集計CSVに追記 ===
+    if exist "%TEMP_CSV%" (
+        more +1 "%TEMP_CSV%" >> "%SUMMARY_CSV%"
+    ) else (
+        echo ERROR: temp_result.csv not created.
     )
 )
 
