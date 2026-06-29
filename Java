@@ -3,7 +3,8 @@ setlocal enabledelayedexpansion
 
 rem ==================================================
 rem Beyond Compare 3 複数ファイル比較バッチ
-rem compare_list.txt の各行を比較し、結果を summary_result.csv に集約する
+rem 左なし・右ありの場合は「新規」として右ファイル行数を出力
+rem 右なし・左ありの場合は「削除」として左ファイル行数を出力
 rem ==================================================
 
 rem === パス設定 ===
@@ -13,17 +14,9 @@ set "SCRIPT_FILE=D:\TOOL\Beyond Compare 3\compare_temp.txt"
 set "TEMP_CSV=D:\temp_result.csv"
 set "SUMMARY_CSV=D:\TOOL\Beyond Compare 3\Reports\summary_result.csv"
 
-rem === 実行時のパス確認 ===
-echo LIST_FILE   = %LIST_FILE%
-echo SCRIPT_FILE = %SCRIPT_FILE%
-echo TEMP_CSV    = %TEMP_CSV%
-echo SUMMARY_CSV = %SUMMARY_CSV%
-echo.
-pause
-
 rem === 集計CSVを初期化 ===
 if exist "%SUMMARY_CSV%" del "%SUMMARY_CSV%"
-echo SourceFile,CompareFile,IOriginal,IAdded,IDeleted,IChanged,UOriginal,UAdded,UDeleted,UChanged,Status>"%SUMMARY_CSV%"
+echo LeftFile,RightFile,LeftOnly,RightOnly,Different,Status>"%SUMMARY_CSV%"
 
 rem === compare_list.txt を1行ずつ処理 ===
 for /f "usebackq tokens=1,2 delims=|" %%A in ("%LIST_FILE%") do (
@@ -35,33 +28,39 @@ for /f "usebackq tokens=1,2 delims=|" %%A in ("%LIST_FILE%") do (
     echo   Left : !LEFT_FILE!
     echo   Right: !RIGHT_FILE!
 
-    rem === 左ファイル存在チェック ===
+    rem === 左なし・右あり：新規ファイル ===
     if not exist "!LEFT_FILE!" (
-        echo ERROR: Left file not found.
-        echo "!LEFT_FILE!","!RIGHT_FILE!",,,,,,,,,LEFT_NOT_FOUND>>"%SUMMARY_CSV%"
+        if exist "!RIGHT_FILE!" (
+            for /f %%C in ('find /v /c "" ^< "!RIGHT_FILE!"') do set "RIGHT_LINES=%%C"
+            echo NEW: !RIGHT_LINES! lines
+            echo "!LEFT_FILE!","!RIGHT_FILE!",0,!RIGHT_LINES!,0,NEW>>"%SUMMARY_CSV%"
+        ) else (
+            echo BOTH_NOT_FOUND
+            echo "!LEFT_FILE!","!RIGHT_FILE!",0,0,0,BOTH_NOT_FOUND>>"%SUMMARY_CSV%"
+        )
     ) else if not exist "!RIGHT_FILE!" (
-        rem === 右ファイル存在チェック ===
-        echo ERROR: Right file not found.
-        echo "!LEFT_FILE!","!RIGHT_FILE!",,,,,,,,,RIGHT_NOT_FOUND>>"%SUMMARY_CSV%"
+        rem === 右なし・左あり：削除ファイル ===
+        for /f %%C in ('find /v /c "" ^< "!LEFT_FILE!"') do set "LEFT_LINES=%%C"
+        echo DELETE: !LEFT_LINES! lines
+        echo "!LEFT_FILE!","!RIGHT_FILE!",!LEFT_LINES!,0,0,DELETE>>"%SUMMARY_CSV%"
     ) else (
-        rem === 前回の一時CSVを削除 ===
+        rem === 左右両方あり：Beyond Compareで比較 ===
         if exist "%TEMP_CSV%" del "%TEMP_CSV%"
 
-        rem === Beyond Compare 用の一時スクリプトを作成 ===
         > "%SCRIPT_FILE%" echo criteria rules-based
         >>"%SCRIPT_FILE%" echo file-report layout:statistics options:display-all output-to:"%TEMP_CSV%" "!LEFT_FILE!" "!RIGHT_FILE!"
 
-        rem === Beyond Compare を実行 ===
         "%BC_DIR%\BComp.exe" @"%SCRIPT_FILE%"
 
-        rem === 結果CSVが作成された場合だけ集計CSVへ追記 ===
+        rem === BC結果CSVから実データ行だけ取得 ===
         if exist "%TEMP_CSV%" (
-            rem CSV内の実データ行だけを追記する
-            findstr /r "^\"" "%TEMP_CSV%" >> "%SUMMARY_CSV%"
+            for /f "usebackq tokens=1,2,3,4,5,6,7,8,9,10 delims=," %%a in (`findstr /r "^\"" "%TEMP_CSV%"`) do (
+                rem %%d=IAdded, %%e=IDeleted, %%f=IChanged
+                echo %%a,%%b,%%e,%%d,%%f,OK>>"%SUMMARY_CSV%"
+            )
         ) else (
-            rem エンコードエラー等でレポート作成に失敗した場合
-            echo ERROR: temp_result.csv not created.
-            echo "!LEFT_FILE!","!RIGHT_FILE!",,,,,,,,,REPORT_CREATE_FAILED>>"%SUMMARY_CSV%"
+            echo REPORT_CREATE_FAILED
+            echo "!LEFT_FILE!","!RIGHT_FILE!",0,0,0,REPORT_CREATE_FAILED>>"%SUMMARY_CSV%"
         )
     )
 )
