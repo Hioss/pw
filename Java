@@ -1,14 +1,19 @@
-<settings>
-    <proxies>
-        <proxy>
-            <id>company-proxy</id>
-            <active>true</active>
-            <protocol>http</protocol>
-            <host>代理服务器地址</host>
-            <port>代理端口</port>
-            <username>代理用户名</username>
-            <password>代理密码</password>
-            <nonProxyHosts>localhost|127.0.0.1</nonProxyHosts>
-        </proxy>
-    </proxies>
-</settings>
+【STPCOM 保振系统解析】
+
+保振接続ゲートウェイ
+
+IBM MQ
+IBM 对它的正式定义就是：
+用于把 Queue 中的 Message 复制/移动到文件，或者再从文件装载回 Queue。
+
+从 Queue 导出
+dmpmqmsg -m QM_STPCOM -i STP.REQUEST.Q -f mqdata.txt
+
+再导入 Queue
+dmpmqmsg -m QMGR名 -o QUEUE名 -f 数据文件
+dmpmqmsg -m QM_STPCOM -o STP.IN.Q -f testdata.msg
+
+其中：
+-m：Queue Manager
+-o：写入目标 Queue
+-f：读取的 dump/message 文件
